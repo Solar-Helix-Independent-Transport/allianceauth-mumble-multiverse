@@ -29,10 +29,10 @@ def deactivate_mumbleverse(request, server_id):
             server_id=server_id,
             user=request.user
         )
-        req = kick_username(_u.server.mumble_virtual_server_id, _u.username)
+        req = _u.kick_user("Deactivated by Auth")
         if not req:
             messages.warning(request, _('Unable to kick member from mumbleverse server.'))
-        req = deregister_user(_u.server.mumble_virtual_server_id, _u.uid)
+        req = _u.deregister_user()
         if req:
             _u.delete()
             messages.success(request, _('Deactivated Mumbleverse Account.'))
@@ -58,21 +58,11 @@ def reset_mumbleverse(request, server_id):
             server_id=server_id,
             user=request.user
         )
-        deregister_user(
-            _u.server.mumble_virtual_server_id,
-            _u.uid
-        )
+        _u.deregister_user()
+        _u.update_username()
         _u.reset_password()
-        _username = MumbleverseManager.get_display_name(request.user)
-        _u.username = _username
-        data = register_user(
-            _u.server.mumble_virtual_server_id,
-            _username,
-            _u.credentials["password"]
-        )
+        data = _u.register_user(_u.credentials["password"])
         if data:
-            _u.uid = data["user_id"]
-            _u.save()
             update_server_groups.delay(server_id)
             return render(
                 request,
@@ -103,32 +93,24 @@ def reset_mumbleverse(request, server_id):
 def set_mumbleverse(request, server_id):
     try:
         if request.method == "POST":
-            _u = MumbleverseServerUser.objects.get(
-                server_id=server_id,
-                user=request.user
-            )
-            deregister_user(
-                _u.server.mumble_virtual_server_id,
-                _u.uid
-            )
-            _username = MumbleverseManager.get_display_name(request.user)
-            _u.username = _username
-            password = request.POST.get("password")
-            if not password:
+            _password = request.POST.get("password")
+            if not _password:
                 messages.error(
                     request, _(
                         'An error occurred while processing your Mumbleverse Account.'
                     )
                 )
                 return redirect("services:services")
-            data = register_user(
-                _u.server.mumble_virtual_server_id,
-                _username,
-                password
+
+            # update user by first deleting the user.
+            _u = MumbleverseServerUser.objects.get(
+                server_id=server_id,
+                user=request.user
             )
-            if data:
-                _u.uid = data["user_id"]
-                _u.save()
+            _u.deregister_user()
+            _u.update_username()
+            updated = _u.register_user(_password)
+            if updated:
                 update_server_groups.delay(server_id)
                 messages.success(
                     request, _(
@@ -165,19 +147,15 @@ def set_mumbleverse(request, server_id):
 def activate_mumbleverse(request, server_id):
     try:
         _s = MumbleverseServer.objects.get(id=server_id)
-        _username = MumbleverseManager.get_display_name(request.user)
         _u = MumbleverseServerUser.objects.create(
             server=_s,
             user=request.user,
             uid=1,
-            username=_username
+            username="_temp"
         )
+        _u.update_username()
         _u.reset_password()
-        req = register_user(
-            _u.server.mumble_virtual_server_id,
-            _username,
-            _u.credentials["password"]
-        )
+        req = _u.register_user(_u.credentials["password"])
         if not req:
             _u.delete()
             messages.error(
@@ -186,8 +164,6 @@ def activate_mumbleverse(request, server_id):
                 )
             )
             return redirect("services:services")
-        _u.uid = req["user_id"]
-        _u.save()
         update_server_groups.delay(server_id)
         return render(
             request,

@@ -4,8 +4,17 @@ Create your models in here
 """
 
 # Django
+import random
+import logging
+from allianceauth.services.hooks import NameFormatter
+from django.contrib.auth.models import Group
+from passlib.hash import bcrypt_sha256
+from typing import ClassVar
+import string
 from django.db import models
 from django.contrib.auth.models import User
+from mumbleverse.provider import deregister_user, kick_username, register_user
+
 
 class General(models.Model):
     """Meta model for app permissions"""
@@ -20,15 +29,6 @@ class General(models.Model):
             ("global_access", "Can access all Mumbleverse servers")
         )
 
-import random
-import string
-from typing import ClassVar
-from passlib.hash import bcrypt_sha256
-
-from django.db import models
-from django.contrib.auth.models import Group
-from allianceauth.services.hooks import NameFormatter
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ class MumbleverseManager(models.Manager):
     def user_exists(self, username):
         return self.filter(username=username).exists()
 
+
 class MumbleverseServer(models.Model):
     name = models.CharField(
         max_length=150
@@ -78,10 +79,11 @@ class MumbleverseServer(models.Model):
 
     active = models.BooleanField(default=True)
 
+
 class MumbleverseServerUser(models.Model):
 
     @classmethod
-    def user_has_account(cls, server_id, user_id): 
+    def user_has_account(cls, server_id, user_id):
         cls.objects.filter(server_id=server_id, user_id=user_id).exists()
 
     server = models.ForeignKey(
@@ -104,36 +106,45 @@ class MumbleverseServerUser(models.Model):
     def __str__(self):
         return self.username
 
+    def kick_user(self, reason):
+        req = kick_username(self.server, self.username, reason)
+        return req
+
     def update_password(self, password=None):
         init_password = password
         logger.info(f"Updating mumbleverse user {self.server_id} - {self.user_id}({self.uid}) password.")
         if not password:
             password = MumbleverseManager.generate_random_pass()
-        # hit api and record success
-        self.save()
         if init_password is None:
             self.credentials = {'username': self.username, 'password': password}
 
     def reset_password(self):
         self.update_password()
 
-    def update_groups(self, groups: Group=None):
-        if groups is None:
-            groups = self.user.groups.all()
-        groups_str = [self.user.profile.state.name]
-        for group in groups:
-            groups_str.append(str(group.name))
-        safe_groups = ','.join({g.replace(' ', '-') for g in groups_str})
-        logger.info(f"Updating mumble user {self.user} groups to {safe_groups}")
-        self.groups = safe_groups
-        self.save()
-        return True
+    def deregister_user(self):
+        return deregister_user(
+            self.server,
+            self.uid
+        )
 
-    def update_display_name(self):
-        logger.info(f"Updating mumble user {self.user} display name")
-        self.display_name = MumbleverseManager.get_display_name(self.user)
+    def build_username(self):
+        return MumbleverseManager.get_display_name(self.user)
+
+    def update_username(self):
+        self.username = self.build_username()
         self.save()
-        return True
+
+    def register_user(self, password: str):
+        data = register_user(
+            self.server,
+            self.username,
+            password
+        )
+        if data:
+            self.uid = data["user_id"]
+            self.save()
+            return True
+        return False
 
     class Meta:
         permissions = (
