@@ -1,0 +1,277 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mumble Rest",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "paths": {
+    "/api/health-check": {
+      "get": {
+        "operationId": "mumble_rest_api_get_status",
+        "summary": "Get Status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Mumble Health Check",
+        "tags": [
+          "Status"
+        ],
+        "security": [
+          {
+            "check_api_key": []
+          }
+        ]
+      }
+    },
+    "/api/auth/user": {
+      "post": {
+        "operationId": "mumble_rest_api_post_auth_register_or_update",
+        "summary": "Post Auth Register Or Update",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "server_id",
+            "schema": {
+              "default": 0,
+              "title": "Server Id",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "title": "FormParams",
+                "type": "object",
+                "properties": {
+                  "user_name": {
+                    "title": "User Name",
+                    "type": "string"
+                  },
+                  "user_pass": {
+                    "title": "User Pass",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_name",
+                  "user_pass"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "check_api_key": []
+          }
+        ]
+      }
+    },
+    "/api/auth/groups": {
+      "post": {
+        "operationId": "mumble_rest_api_post_auth_update_groups",
+        "summary": "Post Auth Update Groups",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "server_id",
+            "schema": {
+              "default": 0,
+              "title": "Server Id",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "channel_id",
+            "schema": {
+              "default": 0,
+              "title": "Channel Id",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/ACLGroup"
+                },
+                "title": "Groups",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "check_api_key": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "mumble_rest_api_get_auth_update_groups",
+        "summary": "Get Auth Update Groups",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "server_id",
+            "schema": {
+              "default": 0,
+              "title": "Server Id",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "channel_id",
+            "schema": {
+              "default": 0,
+              "title": "Channel Id",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "check_api_key": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ACLGroup": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "users": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Users",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "users"
+        ],
+        "title": "ACLGroup",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "check_api_key": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "key"
+      }
+    }
+  },
+  "servers": []
+}
