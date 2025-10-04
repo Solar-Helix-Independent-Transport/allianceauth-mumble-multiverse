@@ -150,7 +150,7 @@ def activate_mumbleverse(request, server_id):
             server=_s,
             user=request.user,
             uid=request.user.id + 1000000,
-            username="_temp"
+            username=request.user.username
         )
         _u.update_username()
         _u.reset_password()
