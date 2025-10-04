@@ -24,9 +24,7 @@ def deactivate_mumbleverse(request, server_id):
             server_id=server_id,
             user=request.user
         )
-        req = _u.kick_user("Deactivated by Auth")
-        if not req:
-            messages.warning(request, _('Unable to kick member from mumbleverse server.'))
+        _u.kick_user(f"{_u.username} deactivated by Auth")
         req = _u.deregister_user()
         if req:
             _u.delete()
@@ -53,6 +51,7 @@ def reset_mumbleverse(request, server_id):
             server_id=server_id,
             user=request.user
         )
+        _u.kick_user(f"{_u.username} deactivated by Auth")
         _u.deregister_user()
         _u.update_username()
         _u.reset_password()
@@ -102,6 +101,7 @@ def set_mumbleverse(request, server_id):
                 server_id=server_id,
                 user=request.user
             )
+            _u.kick_user(f"{_u.username} deactivated by Auth")
             _u.deregister_user()
             _u.update_username()
             updated = _u.register_user(_password)
