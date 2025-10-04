@@ -142,11 +142,13 @@ def set_mumbleverse(request, server_id):
 def activate_mumbleverse(request, server_id):
     try:
         _s = MumbleverseServer.objects.get(id=server_id)
-        _u = MumbleverseServerUser.objects.create(
+        _u, _created = MumbleverseServerUser.objects.get_or_create(
             server=_s,
             user=request.user,
-            uid=request.user.id + 1000000,
-            username=request.user.username
+            defaults={
+                "uid": request.user.id + 1000000,
+                "username": request.user.username
+            }
         )
         _u.update_username()
         _u.reset_password()
