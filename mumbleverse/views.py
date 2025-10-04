@@ -57,8 +57,6 @@ def reset_mumbleverse(request, server_id):
         _u.reset_password()
         data = _u.register_user(_u.credentials["password"])
         if data:
-            _u.uid = data.get("user_id")
-            _u.save()
             update_server_groups.delay(server_id)
             return render(
                 request,
@@ -108,8 +106,6 @@ def set_mumbleverse(request, server_id):
             _u.update_username()
             updated = _u.register_user(_password)
             if updated:
-                _u.uid = updated.get("user_id")
-                _u.save()
                 update_server_groups.delay(server_id)
                 messages.success(
                     request, _(
@@ -163,8 +159,6 @@ def activate_mumbleverse(request, server_id):
                 )
             )
             return redirect("services:services")
-        _u.uid = req.get("user_id")
-        _u.save()
         update_server_groups.delay(server_id)
         return render(
             request,
