@@ -1,13 +1,11 @@
 import logging
 import urllib
 
-from django.conf import settings
 from django.template.loader import render_to_string
-from allianceauth.notifications import notify
 from django.db.models.signals import post_delete, post_save
 
 from allianceauth import hooks
-from allianceauth.services.hooks import NameFormatter, ServicesHook, UrlHook
+from allianceauth.services.hooks import ServicesHook, UrlHook
 
 from .tasks import update_server_groups, disable_server_user
 from .models import MumbleverseServer, MumbleverseServerUser
@@ -35,16 +33,7 @@ class MumbleverseService(ServicesHook):
 
     def delete_user(self, user, notify_user=False):
         logging.debug(f"Deleting user {user} {self.name} account")
-        # delete remotely
-
-        # try:
-        #     if user.mumble.delete():
-        #         if notify_user:
-        #             notify(user, 'Mumble Account Disabled', level='danger')
-        #         return True
-        #     return False
-        # except MumbleverseServerUser.DoesNotExist:
-        #     logging.debug("User does not have a mumble account")
+        disable_server_user.delay(self.sid, user.id)
 
     def update_groups(self, user):
         # logger.debug(f"Updating {self.name} groups for {user}")
@@ -63,29 +52,38 @@ class MumbleverseService(ServicesHook):
         update_server_groups.delay(self.sid)
 
     def service_active_for_user(self, user):
-        return user.has_perm(self.access_perm)
+        return MumbleverseServer.objects.visible_to(
+            user
+        ).filter(id=self.sid).exists()
 
     def render_services_ctrl(self, request):
-        username = ''
-        service_url = ''
-        connect_url = ''
-        try:
-            _u = MumbleverseServerUser.objects.get(
-                server_id=self.sid,
-                user=request.user
+        if self.service_active_for_user(request.user):
+            username = ''
+            service_url = ''
+            connect_url = ''
+            try:
+                _u = MumbleverseServerUser.objects.get(
+                    server_id=self.sid,
+                    user=request.user
+                )
+                username = _u.username
+                service_url = _u.server.mumble_url
+                connect_url = urllib.parse.quote(username, safe="") + '@' + service_url if username else service_url
+            except MumbleverseServerUser.DoesNotExist:
+                pass
+            return render_to_string(
+                self.service_ctrl_template, 
+                {
+                    'service_name': self.server_name,
+                    'service_url': service_url,
+                    'connect_url': connect_url,
+                    'username': username,
+                    "sid": self.sid
+                },
+                request=request
             )
-            username = _u.username
-            service_url = _u.server.mumble_url
-            connect_url = urllib.parse.quote(username, safe="") + '@' + service_url if username else service_url
-        except MumbleverseServerUser.DoesNotExist:
-            pass
-        return render_to_string(self.service_ctrl_template, {
-            'service_name': self.server_name,
-            'service_url': service_url,
-            'connect_url': connect_url,
-            'username': username,
-            "sid": self.sid
-        }, request=request)
+        else: 
+            return ""
 
 
 def add_del_callback(*args, **kwargs):
@@ -107,12 +105,12 @@ def add_del_callback(*args, **kwargs):
 
     # Loop all services and look for our specific hook classes
     for h in hooks._hooks.get("services_hook", []):
-        if isinstance(h(), MumbleverseServer):
+        if isinstance(h(), MumbleverseService):
             # This is our hook
             # h is an instanced MultiDiscordService hook with a guild_id
             if h.sid in server_add:
                 # this is a known discord ID so remove it from our list of knowns
-                server_add.remove(h.guild_id)
+                server_add.remove(h.sid)
             else:
                 # This one was deleted remove the hook.
                 del (h)

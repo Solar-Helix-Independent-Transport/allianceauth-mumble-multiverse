@@ -6,10 +6,15 @@ Create your models in here
 # Django
 import random
 import logging
+from allianceauth.authentication.models import State
+from allianceauth.eveonline.models import (
+    EveAllianceInfo, EveCharacter, EveCorporationInfo, EveFactionInfo,
+)
 from allianceauth.services.hooks import NameFormatter
 from django.contrib.auth.models import Group
+from mumbleverse.manager import MumbleverseServerManager
 from passlib.hash import bcrypt_sha256
-from typing import ClassVar
+from typing import ClassVar, Union
 import string
 from django.db import models
 from django.contrib.auth.models import User
@@ -61,6 +66,9 @@ class MumbleverseManager(models.Manager):
 
 
 class MumbleverseServer(models.Model):
+
+    objects = MumbleverseServerManager()
+    
     name = models.CharField(
         max_length=150
     )
@@ -77,8 +85,67 @@ class MumbleverseServer(models.Model):
         max_length=255
     )
 
+    # Permisions
+    state_access = models.ManyToManyField(
+        State,
+        blank=True,
+        help_text="States to whose members this server is available."
+
+    )
+
+    group_access = models.ManyToManyField(
+        Group,
+        blank=True,
+        help_text="Groups to whose members this server is available."
+    )
+
+    character_access = models.ManyToManyField(
+        EveCharacter,
+        blank=True,
+        help_text="Characters to which this server is available."
+    )
+
+    corporation_access = models.ManyToManyField(
+        EveCorporationInfo,
+        blank=True,
+        help_text="Corporations to whose members this server is available."
+    )
+
+    alliance_access = models.ManyToManyField(
+        EveAllianceInfo,
+        blank=True,
+        help_text="Alliances to whose members this server is available."
+    )
+
+    faction_access = models.ManyToManyField(
+        EveFactionInfo,
+        blank=True,
+        help_text="Factions to whose members this server is available."
+    )
+
     active = models.BooleanField(default=True)
 
+    @classmethod
+    def user_can_access_server(cls, user: User, server: Union[int, 'MumbleverseServer']) -> bool:
+        """Check if a user can access a server
+
+        Params:
+        - user: User object
+        - server: server_id or Server model
+
+        Returns:
+        - True if they have access
+        """
+
+        guild_id = server
+        if isinstance(server, MumbleverseServer):
+            guild_id = server.id
+        return cls.objects.get_queryset(
+        ).visible_to(
+            user
+        ).filter(
+            id=int(guild_id)
+        ).exists()
 
 class MumbleverseServerUser(models.Model):
 
