@@ -38,6 +38,7 @@ dynamic = [
 ]
 dependencies = [
     "allianceauth>=4.3.1",
+    "httpx",
 ]
 urls."Issue / Bug Reports" = "https://github.com/ppfeufer/allianceauth-mumble-multiverse/issues"
 

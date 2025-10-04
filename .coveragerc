@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = example
+source = mumbleverse
 
 [report]
 exclude_lines =
