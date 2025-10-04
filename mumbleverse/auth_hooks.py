@@ -1,15 +1,18 @@
+# Standard Library
 import logging
 import urllib
 
-from django.template.loader import render_to_string
+# Django
 from django.db.models.signals import post_delete, post_save
+from django.template.loader import render_to_string
 
+# Alliance Auth
 from allianceauth import hooks
 from allianceauth.services.hooks import ServicesHook, UrlHook
 
-from .tasks import update_server_groups, disable_server_user
-from .models import MumbleverseServer, MumbleverseServerUser
 from . import urls
+from .models import MumbleverseServer, MumbleverseServerUser
+from .tasks import disable_server_user, update_server_groups
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +29,7 @@ class MumbleverseService(ServicesHook):
         if hasattr(self, "sid"):
             self.name = f'mmv:{self.server_name if self.server_name else self.sid}'
         else:
-            self.name = f'mmv'
+            self.name = 'mmv'
         self.access_perm = 'mumbleverse.basic_access'
         self.service_ctrl_template = 'mumbleverse/mumbleverse_service_ctrl.html'
         self.name_format = '[{corp_ticker}] {character_name}'
@@ -72,7 +75,7 @@ class MumbleverseService(ServicesHook):
             except MumbleverseServerUser.DoesNotExist:
                 pass
             return render_to_string(
-                self.service_ctrl_template, 
+                self.service_ctrl_template,
                 {
                     'service_name': self.server_name,
                     'service_url': service_url,
@@ -82,7 +85,7 @@ class MumbleverseService(ServicesHook):
                 },
                 request=request
             )
-        else: 
+        else:
             return ""
 
 

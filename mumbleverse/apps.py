@@ -1,13 +1,16 @@
 """App Configuration"""
+# Standard Library
 import logging
 
 # Django
 from django.apps import AppConfig
 
+# AA Mumbleverse
 # AA Example App
 from mumbleverse import __version__
 
 logger = logging.getLogger(__name__)
+
 
 class ExampleConfig(AppConfig):
     """App Config"""
@@ -25,4 +28,4 @@ class ExampleConfig(AppConfig):
             logger.error("DMV: Failed to Init DMV Server Hook")
             logger.error(e, stack_info=True)
 
-        from . import signals  # NOPEP8
+        from . import signals  # noqa: F401

@@ -78,10 +78,10 @@ repos:
         name: Check for case conflicts
         description: Check for files with names that differ only in case.
 
-      # Python checks
-      - id: check-docstring-first
-        name: Check for docstring in first line
-        description: Check that the first line of a file is a docstring.
+      # # Python checks
+      # - id: check-docstring-first
+      #   name: Check for docstring in first line
+      #   description: Check that the first line of a file is a docstring.
 
       - id: debug-statements
         name: Check for debug statements
@@ -219,32 +219,37 @@ repos:
         name: Isort
         description: Sort imports.
 
-  - repo: https://github.com/Pierre-Sassoulas/black-disable-checker/
-    rev: e37d202bbc277a1e0b2ecbdd6ececd74c8b0352e  # frozen: v1.1.3
-    hooks:
-      - id: black-disable-checker
-        name: Black disable checker
-        description: Check for black disable comments.
+  # - repo: https://github.com/Pierre-Sassoulas/black-disable-checker/
+  #   rev: e37d202bbc277a1e0b2ecbdd6ececd74c8b0352e  # frozen: v1.1.3
+  #   hooks:
+  #     - id: black-disable-checker
+  #       name: Black disable checker
+  #       description: Check for black disable comments.
 
-  - repo: https://github.com/psf/black
-    rev: 8a737e727ac5ab2f1d4cf5876720ed276dc8dc4b  # frozen: 25.1.0
-    hooks:
-      - id: black
-        name: Black
-        description: Format Python code.
-        args:
-          - --target-version=py310  # Minimum required Python version for AA. Update as needed.
+  # - repo: https://github.com/psf/black
+  #   rev: 8a737e727ac5ab2f1d4cf5876720ed276dc8dc4b  # frozen: 25.1.0
+  #   hooks:
+  #     - id: black
+  #       name: Black
+  #       description: Format Python code.
+  #       args:
+  #         - --target-version=py310  # Minimum required Python version for AA. Update as needed.
 
-  - repo: https://github.com/asottile/blacken-docs
-    rev: 78a9dcbecf4f755f65d1f3dec556bc249d723600  # frozen: 1.19.1
+  - repo: https://github.com/hhatto/autopep8
+    rev: "v2.3.1"
     hooks:
-      - id: blacken-docs
-        name: Blacken docs
-        description: Format Python code in documentation files.
-        additional_dependencies:
-          - black==25.1.0  # https://github.com/psf/black/releases/latest
-        args:
-          - --target-version=py310  # Minimum required Python version for AA. Update as needed.
+      - id: autopep8
+
+  # - repo: https://github.com/asottile/blacken-docs
+  #   rev: 78a9dcbecf4f755f65d1f3dec556bc249d723600  # frozen: 1.19.1
+  #   hooks:
+  #     - id: blacken-docs
+  #       name: Blacken docs
+  #       description: Format Python code in documentation files.
+  #       additional_dependencies:
+  #         - black==25.1.0  # https://github.com/psf/black/releases/latest
+  #       args:
+  #         - --target-version=py310  # Minimum required Python version for AA. Update as needed.
 
   - repo: https://github.com/executablebooks/mdformat
     rev: ff29be1a1ba8029d9375882aa2c812b62112a593  # frozen: 0.7.22

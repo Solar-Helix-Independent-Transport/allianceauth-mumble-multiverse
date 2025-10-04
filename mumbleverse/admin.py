@@ -1,9 +1,13 @@
 """Admin models"""
 
 # Django
-from django.contrib import admin  # noqa: F401
+from django.contrib import admin
+
 from .models import MumbleverseServer, MumbleverseServerUser
+
+
 # Register your models here.
+@admin.register(MumbleverseServer)
 class MumbleverseServerAdmin(admin.ModelAdmin):
     list_display = ['name', 'mumble_url', 'api_url']
     filter_horizontal = [
@@ -13,7 +17,7 @@ class MumbleverseServerAdmin(admin.ModelAdmin):
         "character_access",
         "group_access",
         "state_access",
-        ]
+    ]
 
-admin.site.register(MumbleverseServer, MumbleverseServerAdmin)
+
 admin.site.register(MumbleverseServerUser)

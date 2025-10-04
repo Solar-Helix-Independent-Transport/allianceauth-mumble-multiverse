@@ -1,6 +1,9 @@
-from functools import wraps
+# Standard Library
 import logging
-from httpx import delete, get, post, ConnectError
+from functools import wraps
+
+# Third Party
+from httpx import ConnectError, delete, get, post
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +18,7 @@ def api_error_wrapper(func):
             logger.error(f"{error.request} - {error.args}")
             return False
     return _api_wrapper
+
 
 @api_error_wrapper
 def get_groups(server):
@@ -32,6 +36,7 @@ def get_groups(server):
     else:
         # out.raise_for_status()
         return False
+
 
 @api_error_wrapper
 def set_groups(server):
@@ -55,7 +60,7 @@ def set_groups(server):
             "key": server.api_key
         },
         json=list(output.values())
-        
+
     )
     if out.status_code == 200:
         return out.json()
@@ -63,12 +68,13 @@ def set_groups(server):
         # out.raise_for_status()
         return False
 
+
 @api_error_wrapper
 def register_user(server, username, password):
     out = post(
         server.api_url + "/api/auth/user",
         data={
-            "user_name": username, 
+            "user_name": username,
             "user_pass": password
         },
         params={
@@ -83,6 +89,7 @@ def register_user(server, username, password):
     else:
         # out.raise_for_status()
         return False
+
 
 @api_error_wrapper
 def deregister_user(server, user_id: int):
@@ -102,13 +109,14 @@ def deregister_user(server, user_id: int):
         # out.raise_for_status()
         return False
 
+
 @api_error_wrapper
 def kick_username(server, user_name, reason="Auth Revoked Access"):
     out = delete(
         server.api_url + "/api/auth/users/kick",
         params={
             "server_id": server.mumble_virtual_server_id,
-            "user_name": user_name, 
+            "user_name": user_name,
             "reason": reason,
         },
         headers={

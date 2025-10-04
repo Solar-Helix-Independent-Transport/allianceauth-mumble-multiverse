@@ -1,7 +1,10 @@
-from django.db.models.signals import m2m_changed, pre_save
-from django.dispatch import receiver
+# Django
+from django.db.models.signals import m2m_changed
 
+# Alliance Auth
 from allianceauth.services.hooks import get_extension_logger
+
+# AA Mumbleverse
 from mumbleverse.tasks import check_all_users_in_server
 
 from .models import MumbleverseServer

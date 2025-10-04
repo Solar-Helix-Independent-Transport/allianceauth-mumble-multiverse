@@ -3,21 +3,31 @@ App Models
 Create your models in here
 """
 
-# Django
-import random
+# Standard Library
 import logging
+import random
+import string
+from typing import ClassVar, Union
+
+# Third Party
+from passlib.hash import bcrypt_sha256
+
+# Django
+from django.contrib.auth.models import Group, User
+from django.db import models
+
+# Alliance Auth
 from allianceauth.authentication.models import State
 from allianceauth.eveonline.models import (
-    EveAllianceInfo, EveCharacter, EveCorporationInfo, EveFactionInfo,
+    EveAllianceInfo,
+    EveCharacter,
+    EveCorporationInfo,
+    EveFactionInfo,
 )
 from allianceauth.services.hooks import NameFormatter
-from django.contrib.auth.models import Group
+
+# AA Mumbleverse
 from mumbleverse.manager import MumbleverseServerManager
-from passlib.hash import bcrypt_sha256
-from typing import ClassVar, Union
-import string
-from django.db import models
-from django.contrib.auth.models import User
 from mumbleverse.provider import deregister_user, kick_username, register_user
 
 
@@ -42,6 +52,7 @@ class MumbleverseManager(models.Manager):
 
     @staticmethod
     def get_display_name(user):
+        # AA Mumbleverse
         from mumbleverse.auth_hooks import MumbleverseService
         return NameFormatter(MumbleverseService(), user).format_name()
 
@@ -68,7 +79,7 @@ class MumbleverseManager(models.Manager):
 class MumbleverseServer(models.Model):
 
     objects = MumbleverseServerManager()
-    
+
     name = models.CharField(
         max_length=150
     )
@@ -146,6 +157,7 @@ class MumbleverseServer(models.Model):
         ).filter(
             id=int(guild_id)
         ).exists()
+
 
 class MumbleverseServerUser(models.Model):
 

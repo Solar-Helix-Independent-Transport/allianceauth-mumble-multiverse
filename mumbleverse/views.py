@@ -1,23 +1,18 @@
+# Standard Library
 import logging
 
-from allianceauth.services.forms import ServicePasswordForm
-from allianceauth.services.abstract import BaseCreatePasswordServiceAccountView, BaseDeactivateServiceAccountView, \
-    BaseResetPasswordServiceAccountView, BaseSetPasswordServiceAccountView
-from django.http import Http404
-from django.contrib.auth.decorators import (
-    login_required, permission_required, user_passes_test,
-)
+# Django
 from django.contrib import messages
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 
-from allianceauth.services.views import superuser_test
+# Alliance Auth
+from allianceauth.services.forms import ServicePasswordForm
 
-from .models import MumbleverseManager, MumbleverseServer, MumbleverseServerUser
-
-from .provider import deregister_user, get_groups, register_user, kick_username
+from .models import MumbleverseServer, MumbleverseServerUser
 from .tasks import update_server_groups
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,10 +33,10 @@ def deactivate_mumbleverse(request, server_id):
             messages.success(request, _('Deactivated Mumbleverse Account.'))
         else:
             messages.error(
-            request, _(
-                'An error occurred while deactivating Mumbleverse Account.'
+                request, _(
+                    'An error occurred while deactivating Mumbleverse Account.'
+                )
             )
-        )
     except MumbleverseServerUser.DoesNotExist:
         messages.error(
             request, _(
@@ -72,7 +67,7 @@ def reset_mumbleverse(request, server_id):
                     'service': _u.server.name,
                 }
             )
-        else: 
+        else:
             messages.error(
                 request, _(
                     'An error occurred while processing your Mumbleverse Account.'
@@ -118,7 +113,7 @@ def set_mumbleverse(request, server_id):
                     )
                 )
                 return redirect("services:services")
-            else: 
+            else:
                 messages.error(
                     request, _(
                         'An error occurred while processing your Mumbleverse Account.'

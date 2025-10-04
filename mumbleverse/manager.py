@@ -1,13 +1,19 @@
+# Standard Library
 import logging
 
+# Django
 from django.conf import settings
 from django.db import models
 
+# Alliance Auth
 from allianceauth.eveonline.models import (
-    EveAllianceInfo, EveCorporationInfo, EveFactionInfo,
+    EveAllianceInfo,
+    EveCorporationInfo,
+    EveFactionInfo,
 )
 
 logger = logging.getLogger(__name__)
+
 
 class MumbleverseServerQuerySet(models.QuerySet):
     def visible_to(self, user):
