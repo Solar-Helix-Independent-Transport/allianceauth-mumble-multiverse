@@ -177,8 +177,9 @@ class MumbleverseServerUser(models.Model):
         User,
         on_delete=models.CASCADE
     )
-    uid = models.CharField(max_length=254, unique=True)
-    username = models.CharField(max_length=254, unique=True)
+
+    uid = models.CharField(max_length=254)
+    username = models.CharField(max_length=254)
     last_update = models.DateTimeField(
         auto_now=True
     )
