@@ -158,6 +158,9 @@ class MumbleverseServer(models.Model):
             id=int(guild_id)
         ).exists()
 
+    def __str__(self):
+        return f"{self.name} ({self.mumble_virtual_server_id}) - {self.mumble_url}"
+
 
 class MumbleverseServerUser(models.Model):
 

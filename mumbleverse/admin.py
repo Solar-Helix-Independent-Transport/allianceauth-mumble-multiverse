@@ -20,4 +20,7 @@ class MumbleverseServerAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(MumbleverseServerUser)
+@admin.register(MumbleverseServerUser)
+class MumbleverseServerUserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'uid', 'server', 'user', 'last_update']
+    raw_id_fields = ['server', 'user']
