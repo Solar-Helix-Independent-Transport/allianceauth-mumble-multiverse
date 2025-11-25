@@ -7,6 +7,7 @@ Create your models in here
 import logging
 import random
 import string
+from collections import defaultdict
 from typing import ClassVar, Union
 
 # Third Party
@@ -234,3 +235,48 @@ class MumbleverseServerUser(models.Model):
             ("access_mumbleverse", "Can access the Mumble service"),
             ("view_connection_history", "Can access the connection history of the Mumble service"),
         )
+
+
+class FilterBase(models.Model):
+
+    name = models.CharField(max_length=500)
+    description = models.CharField(max_length=500)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+
+    def process_filter(self, user: User):
+        raise NotImplementedError("Please Create a filter!")
+
+
+class MumbleverseServerActiveFilter(FilterBase):
+    reversed_logic = models.BooleanField(
+        default=False, help_text="If set all members WITHOUT an account will pass the test.")
+    server = models.ForeignKey(MumbleverseServer, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Smart Filter: Mumbleverse Server Active"
+        verbose_name_plural = verbose_name
+
+    def process_filter(self, user: User):
+        try:
+            return self.audit_filter([user])[user.id]["check"]
+        except Exception as e:
+            logger.error(e, exc_info=1)
+            return False
+
+    def audit_filter(self, users):
+        logic = self.reversed_logic
+        accounts = MumbleverseServerUser.objects.filter(
+            guild=self.server,
+            user__in=users
+        )
+        output = defaultdict(lambda: {"message": "", "check": logic})
+        for a in accounts:
+            output[a.user_id] = {
+                "message": "Active", "check": not logic
+            }
+        return output
