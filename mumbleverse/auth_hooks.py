@@ -11,7 +11,11 @@ from allianceauth import hooks
 from allianceauth.services.hooks import ServicesHook, UrlHook
 
 from . import urls
-from .models import MumbleverseServer, MumbleverseServerUser
+from .models import (
+    MumbleverseServer,
+    MumbleverseServerActiveFilter,
+    MumbleverseServerUser,
+)
 from .tasks import disable_server_user, update_server_groups
 
 logger = logging.getLogger(__name__)
@@ -146,3 +150,8 @@ post_delete.connect(add_del_callback, sender=MumbleverseServer)
 @hooks.register("url_hook")
 def register_urls():
     return UrlHook(urls, "mumbleverse", r"^mumbleverse/")
+
+
+@hooks.register("secure_group_filters")
+def filters():
+    return [MumbleverseServerActiveFilter]
