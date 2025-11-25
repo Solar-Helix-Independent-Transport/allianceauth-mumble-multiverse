@@ -24,3 +24,4 @@ class MumbleverseServerAdmin(admin.ModelAdmin):
 class MumbleverseServerUserAdmin(admin.ModelAdmin):
     list_display = ['username', 'uid', 'server', 'user', 'last_update']
     raw_id_fields = ['server', 'user']
+    search_fields = ['username']
