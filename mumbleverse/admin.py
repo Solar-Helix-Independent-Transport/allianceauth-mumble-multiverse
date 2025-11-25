@@ -3,7 +3,11 @@
 # Django
 from django.contrib import admin
 
-from .models import MumbleverseServer, MumbleverseServerUser
+from .models import (
+    MumbleverseServer,
+    MumbleverseServerActiveFilter,
+    MumbleverseServerUser,
+)
 
 
 # Register your models here.
@@ -27,7 +31,7 @@ class MumbleverseServerUserAdmin(admin.ModelAdmin):
     search_fields = ['username']
 
 
-@admin.register(MumbleverseServerUser)
+@admin.register(MumbleverseServerActiveFilter)
 class MumbleverseServerFilterAdmin(admin.ModelAdmin):
     list_display = ['server', 'reversed_logic']
     raw_id_fields = ['server']
