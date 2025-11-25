@@ -271,7 +271,7 @@ class MumbleverseServerActiveFilter(FilterBase):
     def audit_filter(self, users):
         logic = self.reversed_logic
         accounts = MumbleverseServerUser.objects.filter(
-            guild=self.server,
+            server=self.server,
             user__in=users
         )
         output = defaultdict(lambda: {"message": "", "check": logic})
