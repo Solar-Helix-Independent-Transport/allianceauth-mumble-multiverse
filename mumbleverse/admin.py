@@ -25,3 +25,9 @@ class MumbleverseServerUserAdmin(admin.ModelAdmin):
     list_display = ['username', 'uid', 'server', 'user', 'last_update']
     raw_id_fields = ['server', 'user']
     search_fields = ['username']
+
+
+@admin.register(MumbleverseServerUser)
+class MumbleverseServerFilterAdmin(admin.ModelAdmin):
+    list_display = ['server', 'reversed_logic']
+    raw_id_fields = ['server']
