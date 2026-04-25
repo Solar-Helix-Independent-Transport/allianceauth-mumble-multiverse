@@ -29,7 +29,8 @@ def get_groups(server):
         },
         headers={
             "key": server.api_key
-        }
+        },
+        timeout=60
     )
     if out.status_code == 200:
         return out.json()
@@ -59,8 +60,8 @@ def set_groups(server):
         headers={
             "key": server.api_key
         },
-        json=list(output.values())
-
+        json=list(output.values()),
+        timeout=60
     )
     if out.status_code == 200:
         return out.json()
@@ -83,6 +84,7 @@ def register_user(server, username, password):
         headers={
             "key": server.api_key
         },
+        timeout=60
     )
     if out.status_code == 200:
         return out.json()
@@ -102,6 +104,7 @@ def deregister_user(server, user_id: int):
         headers={
             "key": server.api_key
         },
+        timeout=60
     )
     if out.status_code == 200:
         return out.json()
@@ -122,6 +125,7 @@ def kick_username(server, user_name, reason="Auth Revoked Access"):
         headers={
             "key": server.api_key
         },
+        timeout=60
     )
     if out.status_code == 200:
         return out.json()
