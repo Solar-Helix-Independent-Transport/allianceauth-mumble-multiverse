@@ -5,11 +5,14 @@ import logging
 
 # Third Party
 from celery import shared_task
+from httpx import HTTPError
 
 # Alliance Auth
 from allianceauth.services.tasks import QueueOnce
 
-from .models import MumbleverseServer, MumbleverseServerUser
+# AA Mumbleverse
+from mumbleverse.models import MumbleverseServer, MumbleverseServerUser
+
 from .provider import set_groups
 
 logger = logging.getLogger(__name__)
@@ -33,6 +36,10 @@ def disable_server_user(self, server_id: int, user_id: int):
             _u.delete()
     except MumbleverseServerUser.DoesNotExist:
         logger.error("Unable to delete user? none exists?")
+    except HTTPError as error:
+        logger.error(f"Failed to delete user from mumble server api - {server_id} - {user_id}")
+        logger.error(f"{error.request} - {error.args}")
+        self.retry(countdown=60)
 
 
 @shared_task(bind=True, base=QueueOnce)
@@ -44,3 +51,10 @@ def check_all_users_in_server(self, server_id):
             disable_server_user.delay(server.id, u.user.id)
         # else:
         #     print(f"pass {u}")
+
+
+@shared_task(bind=True, base=QueueOnce)
+def check_users_in_all_server(self):
+    servers = MumbleverseServer.objects.all()
+    for server in servers:
+        check_all_users_in_server.delay(server.id)
